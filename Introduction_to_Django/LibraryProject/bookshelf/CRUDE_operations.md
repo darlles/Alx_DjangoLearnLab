@@ -33,6 +33,15 @@ list(books.values())
 # [{'id': 1, 'title': '1984', 'author': 'George Orwell', 'publication_year': 1949}]
 
 ## Update
+# Update
+
+Command:
+from bookshelf.models import Book
+book = Book.objects.get(title="1984", author="George Orwell", publication_year=1949)
+book.title = "Nineteen Eighty-Four"
+book.save()
+book.title
+
 <update command block and expected output>
 from bookshelf.models import Book
 b = Book.objects.get(title="1984", author="George Orwell", publication_year=1949)
