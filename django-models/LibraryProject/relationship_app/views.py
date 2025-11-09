@@ -33,7 +33,7 @@ def register_view(request):
 from django.contrib.auth.views import LoginView, 
 
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, @user_passes_test
 from .models import UserProfile
 
 def check_role(role):
