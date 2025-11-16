@@ -18,3 +18,12 @@ This app uses Django's built-in permissions and groups to control access:
 
 ### Enforcement:
 Views are protected using `@permission_required` decorators.
+
+## Security Measures Implemented
+
+- `DEBUG = False`: Prevents sensitive error info from being exposed.
+- `CSRF_COOKIE_SECURE`, `SESSION_COOKIE_SECURE`: Enforces HTTPS-only cookies.
+- `SECURE_BROWSER_XSS_FILTER`, `X_FRAME_OPTIONS`, `SECURE_CONTENT_TYPE_NOSNIFF`: Adds browser-level protections.
+- `django-csp`: Enforces a strict Content Security Policy to mitigate XSS.
+- All forms include `{% csrf_token %}`.
+- Views use Django ORM and forms to prevent SQL injection and validate input.
