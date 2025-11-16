@@ -22,3 +22,10 @@ def edit_article(request, article_id):
 def delete_article(request, article_id):
     # logic to delete article
     pass
+
+from django.shortcuts import render
+from .models import Book
+
+def book_list(request):
+    books = Book.objects.all()
+    return render(request, 'bookshelf/book_list.html', {'books': books})
