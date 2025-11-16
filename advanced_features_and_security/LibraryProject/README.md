@@ -27,3 +27,24 @@ Views are protected using `@permission_required` decorators.
 - `django-csp`: Enforces a strict Content Security Policy to mitigate XSS.
 - All forms include `{% csrf_token %}`.
 - Views use Django ORM and forms to prevent SQL injection and validate input.
+
+
+## HTTPS Security Configuration
+
+### Django Settings
+- `SECURE_SSL_REDIRECT`: Forces HTTPS for all requests.
+- `SECURE_HSTS_SECONDS`: Enables HSTS for one year.
+- `SECURE_HSTS_INCLUDE_SUBDOMAINS`: Applies HSTS to subdomains.
+- `SECURE_HSTS_PRELOAD`: Allows HSTS preloading by browsers.
+- `SESSION_COOKIE_SECURE` and `CSRF_COOKIE_SECURE`: Enforce HTTPS-only cookies.
+- `X_FRAME_OPTIONS`, `SECURE_CONTENT_TYPE_NOSNIFF`, `SECURE_BROWSER_XSS_FILTER`: Add browser-level protections.
+
+### Deployment
+- SSL/TLS configured via Nginx with certificate and key files.
+- Security headers added in server configuration.
+
+### Review Summary
+- All HTTP traffic is redirected to HTTPS.
+- Cookies and headers are secured.
+- HSTS ensures long-term HTTPS enforcement.
+- Future improvement: automate certificate renewal with Let's Encrypt.
