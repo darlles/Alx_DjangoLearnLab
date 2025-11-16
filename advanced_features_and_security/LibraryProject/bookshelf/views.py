@@ -2,6 +2,7 @@
 from django.contrib.auth.decorators import permission_required
 from django.shortcuts import render
 from .models import Article
+from .forms import ExampleForm
 
 @permission_required('your_app.can_view', raise_exception=True)
 def view_article(request):
