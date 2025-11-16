@@ -160,6 +160,7 @@ CSP_FONT_SRC = ("'self'", 'https://fonts.gstatic.com')
 
 # Redirect all HTTP requests to HTTPS
 SECURE_SSL_REDIRECT = True  # Enforces HTTPS for all incoming requests
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # HTTP Strict Transport Security (HSTS)
 SECURE_HSTS_SECONDS = 31536000  # One year
