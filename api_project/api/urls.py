@@ -41,4 +41,14 @@ urlpatterns = [
 
     # Include the router URLs for BookViewSet (all CRUD operations)
     path('', include(router.urls)),
+
+     # Public list view
+    path('books/', BookList.as_view(), name='book-list'),
+
+    # Token authentication endpoint
+    path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
+
+    # CRUD routes for BookViewSet
+    path('', include(router.urls)),
+
 ]
