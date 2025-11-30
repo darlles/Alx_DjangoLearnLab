@@ -29,3 +29,10 @@
 ## Ordering
 - `/api/books/?ordering=title`
 - `/api/books/?ordering=-publication_year` → descending order
+
+# API Testing
+
+## Running Tests
+Execute:
+```bash
+python manage.py test api
