@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Book
 from .serializers import BookSerializer
+from django_filters import rest_framework as filters
 # ListView: Retrieve all books
 class BookListView(generics.ListAPIView):
     """
@@ -89,3 +90,10 @@ class BookDeleteView(generics.DestroyAPIView):
     # Ordering fields
     ordering_fields = ['title', 'publication_year']
     ordering = ['title']  # default ordering
+
+    class MyModelViewSet(viewsets.ModelViewSet):
+    queryset = MyModel.objects.all()
+    serializer_class = MyModelSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_fields = ('status', 'category')  # fields you want to filter on
+
