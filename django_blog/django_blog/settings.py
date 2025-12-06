@@ -80,7 +80,7 @@ DATABASES = {
         'USER': 'bloguser',
         'PASSWORD': '#Freebizzdam3',
         'HOST': 'localhost',
-        'POST': '5432',
+        'PORT': '5432',
 
     }
 }
