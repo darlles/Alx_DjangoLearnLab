@@ -31,3 +31,149 @@
     <script src="{% static 'js/scripts.js' %}"></script>
 </body>
 </html>
+
+<!-- templates/blog/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Blog{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <nav>
+    {% if user.is_authenticated %}
+      <span>Signed in as {{ user.username }}</span>
+      <a href="{% url 'profile' %}">Profile</a>
+      <form action="{% url 'logout' %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}">Login</a>
+      <a href="{% url 'register' %}">Register</a>
+    {% endif %}
+  </nav>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
+
+<!-- templates/blog/login.html -->
+{% extends 'blog/base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<h1>Login</h1>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div>
+    <label>Username</label>
+    {{ form.username }}
+    {{ form.username.errors }}
+  </div>
+  <div>
+    <label>Password</label>
+    {{ form.password }}
+    {{ form.password.errors }}
+  </div>
+  <button type="submit">Sign in</button>
+</form>
+<p>Don’t have an account? <a href="{% url 'register' %}">Register</a></p>
+{% endblock %}
+
+<!-- templates/blog/logout.html -->
+{% extends 'blog/base.html' %}
+{% block title %}Logout{% endblock %}
+{% block content %}
+<h1>You have logged out</h1>
+<p><a href="{% url 'login' %}">Login again</a></p>
+{% endblock %}
+
+<!-- templates/blog/register.html -->
+{% extends 'blog/base.html' %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<h1>Create an account</h1>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div>
+    <label>Username</label>
+    {{ form.username }}
+    {{ form.username.errors }}
+  </div>
+  <div>
+    <label>Email</label>
+    {{ form.email }}
+    {{ form.email.errors }}
+  </div>
+  <div>
+    <label>Password</label>
+    {{ form.password1 }}
+    {{ form.password1.errors }}
+  </div>
+  <div>
+    <label>Confirm password</label>
+    {{ form.password2 }}
+    {{ form.password2.errors }}
+  </div>
+  <button type="submit">Register</button>
+</form>
+<p>Already registered? <a href="{% url 'login' %}">Login</a></p>
+{% endblock %}
+
+<!-- templates/blog/profile.html -->
+{% extends 'blog/base.html' %}
+{% block title %}Your profile{% endblock %}
+{% block content %}
+<h1>Your profile</h1>
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+
+  <fieldset>
+    <legend>Account</legend>
+    {{ u_form.non_field_errors }}
+    <div>
+      <label>Username</label>
+      {{ u_form.username }}
+      {{ u_form.username.errors }}
+    </div>
+    <div>
+      <label>Email</label>
+      {{ u_form.email }}
+      {{ u_form.email.errors }}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Profile</legend>
+    {{ p_form.non_field_errors }}
+    <div>
+      <label>Bio</label>
+      {{ p_form.bio }}
+      {{ p_form.bio.errors }}
+    </div>
+    <div>
+      <label>Avatar</label>
+      {% if request.user.profile.avatar %}
+        <img src="{{ request.user.profile.avatar.url }}" alt="Avatar" style="max-height: 120px;">
+      {% endif %}
+      {{ p_form.avatar }}
+      {{ p_form.avatar.errors }}
+    </div>
+  </fieldset>
+
+  <button type="submit">Save changes</button>
+</form>
+{% endblock %}
