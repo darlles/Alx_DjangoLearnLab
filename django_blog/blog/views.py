@@ -8,6 +8,14 @@ from .forms import RegisterForm, UserUpdateForm, ProfileUpdateForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.views.generic import UpdateView, DeleteView
+
+from .models import Post, Comment
+from .forms import CommentForm
+
+
 
 from .models import Post
 from .forms import PostForm
@@ -102,3 +110,60 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def handle_no_permission(self):
         messages.error(self.request, "You are not allowed to delete this post.")
         return super().handle_no_permission()
+    
+
+
+def post_detail_with_comments(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    comments = post.comments.select_related('author').all()
+    form = CommentForm()
+
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.error(request, "Please sign in to comment.")
+            return redirect('login')
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            comment.save()
+            messages.success(request, "Comment added.")
+            return redirect('post-detail', pk=post.pk)
+        else:
+            messages.error(request, "Please fix the errors below.")
+
+    return render(request, 'blog/post_detail.html', {
+        'post': post,
+        'comments': comments,
+        'comment_form': form,
+    })
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = 'blog/comment_form.html'
+
+    def test_func(self):
+        return self.get_object().author == self.request.user
+
+    def form_valid(self, form):
+        messages.success(self.request, "Comment updated.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('post-detail', kwargs={'pk': self.object.post.pk})
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
+    template_name = 'blog/comment_confirm_delete.html'
+
+    def test_func(self):
+        return self.get_object().author == self.request.user
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, "Comment deleted.")
+        return super().delete(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})

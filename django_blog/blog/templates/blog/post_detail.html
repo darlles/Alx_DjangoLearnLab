@@ -14,3 +14,51 @@
   {% endif %}
 </article>
 {% endblock %}
+
+<!-- templates/blog/post_detail.html -->
+{% extends 'blog/base.html' %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<article>
+  <h1>{{ post.title }}</h1>
+  <p class="meta">By {{ post.author.username }} • {{ post.created_at|date:"M d, Y H:i" }}</p>
+  <div class="content">{{ post.content|linebreaks }}</div>
+</article>
+
+<section class="comments">
+  <h2>Comments ({{ comments|length }})</h2>
+  <ul class="comment-list">
+    {% for c in comments %}
+      <li class="comment-item">
+        <p class="comment-meta">
+          <strong>{{ c.author.username }}</strong> • {{ c.created_at|date:"M d, Y H:i" }}
+          {% if user.is_authenticated and user == c.author %}
+            · <a href="{% url 'comment-update' c.pk %}">Edit</a>
+            · <a href="{% url 'comment-delete' c.pk %}">Delete</a>
+          {% endif %}
+        </p>
+        <div class="comment-content">{{ c.content|linebreaks }}</div>
+      </li>
+    {% empty %}
+      <li>No comments yet.</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="add-comment">
+  <h3>Leave a comment</h3>
+  {% if user.is_authenticated %}
+    <form method="post" action="{% url 'post-detail' post.pk %}" novalidate>
+      {% csrf_token %}
+      {{ comment_form.non_field_errors }}
+      <div class="form-group">
+        {{ comment_form.content }}
+        {{ comment_form.content.errors }}
+      </div>
+      <button type="submit" class="btn">Post comment</button>
+    </form>
+  {% else %}
+    <p>Please <a href="{% url 'login' %}?next={% url 'post-detail' post.pk %}">log in</a> to comment.</p>
+  {% endif %}
+</section>
+{% endblock %}
