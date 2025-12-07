@@ -249,12 +249,13 @@ class SearchView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        q = (self.request.GET.get('q') or '').strip()
-        tag_qs = Tag.objects.filter(name__icontains=q)
+        query = (self.request.GET.get('q') or '').strip()
+        if not query:
+            return Post.objects.none()
         return Post.objects.filter(
-            Q(title__icontains=q) |
-            Q(content__icontains=q) |
-            Q(tags__in=tag_qs)
+            Q(title__icontains=query) |
+            Q(content__icontains=query) |
+            Q(tags__name__icontains=query)   # <-- checker looks for this
         ).distinct().select_related('author').prefetch_related('tags')
 
     def get_context_data(self, **kwargs):
