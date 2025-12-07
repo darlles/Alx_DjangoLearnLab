@@ -1,0 +1,21 @@
+<!-- templates/blog/post_form.html -->
+{% extends 'blog/base.html' %}
+{% block title %}{% if object %}Edit post{% else %}New post{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if object %}Edit post{% else %}New post{% endif %}</h1>
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <div class="form-group">
+    <label>Title</label>
+    {{ form.title }}
+    {{ form.title.errors }}
+  </div>
+  <div class="form-group">
+    <label>Content</label>
+    {{ form.content }}
+    {{ form.content.errors }}
+  </div>
+  <button type="submit" class="btn">{% if object %}Save changes{% else %}Create post{% endif %}</button>
+</form>
+{% endblock %}
