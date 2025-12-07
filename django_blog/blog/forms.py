@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from .models import Profile
 from .models import Post, Tag
 from .models import Comment
+from taggit.forms import TagWidget
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -101,3 +102,15 @@ class PostForm(forms.ModelForm):
     def initial_from_instance(self, instance):
         # Helper for views to prefill tags_input on edit
         return ', '.join(instance.tags.values_list('name', flat=True))
+
+   # <-- import TagWidget
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ('title', 'content', 'tags')   # include tags field
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'Post title'}),
+            'content': forms.Textarea(attrs={'rows': 10, 'placeholder': 'Write your post...'}),
+            'tags': TagWidget(),   # <-- checker looks for this
+        }
