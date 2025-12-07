@@ -121,3 +121,40 @@
   </main>
 </body>
 </html>
+
+<!-- templates/blog/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Blog{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'blog/css/styles.css' %}">
+</head>
+<body>
+  <header class="header">
+    <nav>
+      <a href="{% url 'post-list' %}">Posts</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'post-create' %}">New post</a>
+      {% endif %}
+      <form class="search" action="{% url 'search' %}" method="get">
+        <input type="text" name="q" placeholder="Search posts or tags..." value="{{ query|default:'' }}">
+        <button type="submit">Search</button>
+      </form>
+    </nav>
+  </header>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

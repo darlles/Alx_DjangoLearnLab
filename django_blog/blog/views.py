@@ -12,14 +12,15 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import UpdateView, DeleteView
 from django.views.generic import CreateView
-
+from django.db.models import Q
+from django.urls import reverse_lazy
 
 from .models import Post, Comment
 from .forms import CommentForm
 
 
 
-from .models import Post
+from .models import Post, Tag
 from .forms import PostForm
 
 class BlogLoginView(LoginView):
@@ -185,3 +186,78 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse('post-detail', kwargs={'pk': self.object.post.pk})
+
+
+
+class PostListView(ListView):
+    model = Post
+    template_name = 'blog/post_list.html'
+    context_object_name = 'posts'
+    paginate_by = 10
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'blog/post_detail.html'
+    context_object_name = 'post'
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/post_form.html'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        messages.success(self.request, "Post created successfully.")
+        return super().form_valid(form)
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/post_form.html'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['tags_input'] = self.object and ', '.join(self.object.tags.values_list('name', flat=True)) or ''
+        return initial
+
+    def test_func(self):
+        return self.get_object().author == self.request.user
+
+    def form_valid(self, form):
+        messages.success(self.request, "Post updated successfully.")
+        return super().form_valid(form)
+
+class TagPostListView(ListView):
+    model = Post
+    template_name = 'blog/tag_post_list.html'
+    context_object_name = 'posts'
+    paginate_by = 10
+
+    def get_queryset(self):
+        self.tag = get_object_or_404(Tag, name=self.kwargs['tag_name'])
+        return Post.objects.filter(tags=self.tag).select_related('author').prefetch_related('tags')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['tag'] = self.tag
+        return ctx
+
+class SearchView(ListView):
+    model = Post
+    template_name = 'blog/search_results.html'
+    context_object_name = 'posts'
+    paginate_by = 10
+
+    def get_queryset(self):
+        q = (self.request.GET.get('q') or '').strip()
+        tag_qs = Tag.objects.filter(name__icontains=q)
+        return Post.objects.filter(
+            Q(title__icontains=q) |
+            Q(content__icontains=q) |
+            Q(tags__in=tag_qs)
+        ).distinct().select_related('author').prefetch_related('tags')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['query'] = self.request.GET.get('q', '')
+        return ctx

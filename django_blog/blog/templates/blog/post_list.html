@@ -30,3 +30,28 @@
   </div>
 {% endif %}
 {% endblock %}
+
+<!-- templates/blog/post_list.html -->
+{% extends 'blog/base.html' %}
+{% block title %}All posts{% endblock %}
+{% block content %}
+<h1>All posts</h1>
+<ul class="post-list">
+  {% for post in posts %}
+    <li>
+      <h2><a href="{% url 'post-detail' post.pk %}">{{ post.title }}</a></h2>
+      <p class="meta">By {{ post.author.username }} • {{ post.created_at|date:"M d, Y" }}</p>
+      <p>{{ post.content|truncatechars:160 }}</p>
+      {% if post.tags.all %}
+        <p class="tags">
+          {% for t in post.tags.all %}
+            <a class="tag" href="{% url 'tag-posts' t.name %}">#{{ t.name }}</a>
+          {% endfor %}
+        </p>
+      {% endif %}
+    </li>
+  {% empty %}
+    <li>No posts yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

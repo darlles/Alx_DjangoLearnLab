@@ -1,0 +1,24 @@
+<!-- templates/blog/search_results.html -->
+{% extends 'blog/base.html' %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<h1>Search results{% if query %} for “{{ query }}”{% endif %}</h1>
+<ul class="post-list">
+  {% for post in posts %}
+    <li>
+      <h2><a href="{% url 'post-detail' post.pk %}">{{ post.title }}</a></h2>
+      <p class="meta">By {{ post.author.username }} • {{ post.created_at|date:"M d, Y" }}</p>
+      <p>{{ post.content|truncatechars:160 }}</p>
+      {% if post.tags.all %}
+        <p class="tags">
+          {% for t in post.tags.all %}
+            <a class="tag" href="{% url 'tag-posts' t.name %}">#{{ t.name }}</a>
+          {% endfor %}
+        </p>
+      {% endif %}
+    </li>
+  {% empty %}
+    <li>No matching posts.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

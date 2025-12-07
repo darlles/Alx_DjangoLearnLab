@@ -62,3 +62,21 @@
   {% endif %}
 </section>
 {% endblock %}
+
+<!-- templates/blog/post_detail.html -->
+{% extends 'blog/base.html' %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<article>
+  <h1>{{ post.title }}</h1>
+  <p class="meta">By {{ post.author.username }} • {{ post.created_at|date:"M d, Y H:i" }}</p>
+  <div class="content">{{ post.content|linebreaks }}</div>
+  {% if post.tags.all %}
+    <p class="tags">
+      {% for t in post.tags.all %}
+        <a class="tag" href="{% url 'tag-posts' t.name %}">#{{ t.name }}</a>
+      {% endfor %}
+    </p>
+  {% endif %}
+</article>
+{% endblock %}
