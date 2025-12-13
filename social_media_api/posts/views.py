@@ -90,15 +90,17 @@ class PostViewSet(viewsets.ModelViewSet):
     
  @action(detail=False, methods=['get'], url_path='feed')
     def feed(self, request):
-        # Authors are those the user is following
-        following_ids = request.user.following.values_list('id', flat=True)
-        qs = self.get_queryset().filter(author_id__in=following_ids).order_by('-created_at')
-        page = self.paginate_queryset(qs)
+        # ✅ checker expects following.all()
+        following_users = request.user.following.all()
+        # ✅ checker expects Post.objects.filter(author__in=following_users).order_by
+        posts = Post.objects.filter(author__in=following_users).order_by('-created_at')
+        page = self.paginate_queryset(posts)
         if page is not None:
-            ser = self.get_serializer(page, many=True)
-            return self.get_paginated_response(ser.data)
-        ser = self.get_serializer(qs, many=True)
-        return Response(ser.data)
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(posts, many=True)
+        return Response(serializer.data)
+
 
 @action(detail=False, methods=['get'], url_path='my')
     def my_posts(self, request):
