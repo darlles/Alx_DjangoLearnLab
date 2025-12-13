@@ -12,11 +12,14 @@ feed_list = PostViewSet.as_view({'get': 'feed'})
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('feed/', feed_list, name='feed'),  # checker requirement
+    path('feed/', feed_list, name='feed'),
+    path('posts/<int:pk>/like/', like_view, name='post-like'),
+    path('posts/<int:pk>/unlike/', unlike_view, name='post-unlike'),
+]
 
+      # checker requirement
        # Like/unlike available at:
     # POST /api/posts/{id}/like/
     # POST /api/posts/{id}/unlike/
 
-]
 
