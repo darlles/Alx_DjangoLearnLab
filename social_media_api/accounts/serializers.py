@@ -33,12 +33,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password2')
-        user = User.objects.create_user(
+        # ✅ Use get_user_model().objects.create_user
+        user = get_user_model().objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email', ''),
             password=validated_data['password'],
         )
-        Token.objects.get_or_create(user=user)
+        # ✅ Create a token for the new user
+        Token.objects.create(user=user)
         return user
 
 class LoginSerializer(serializers.Serializer):
