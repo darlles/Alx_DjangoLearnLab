@@ -20,3 +20,14 @@ class User(AbstractUser):
     @property
     def following_count(self):
         return self.following.count()
+
+    # Convenience methods
+    def follow(self, target):
+        if target != self:
+            target.followers.add(self)
+
+    def unfollow(self, target):
+        target.followers.remove(self)
+
+    def is_following(self, target):
+        return self.following.filter(pk=target.pk).exists()

@@ -7,6 +7,11 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import Post, Comment
 from .serializers import PostSerializer, PostDetailSerializer, CommentSerializer
 from .permissions import IsOwnerOrReadOnly
+from django.db.models import Q
+from .models import Post, Comment, Like
+from .serializers import PostSerializer, PostDetailSerializer
+from notifications.utils import create_notification
+
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.select_related('author').prefetch_related('comments__author')
@@ -33,6 +38,48 @@ class PostViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(ser.data)
         ser = self.get_serializer(qs, many=True)
         return Response(ser.data)
+    
+ @action(detail=False, methods=['get'], url_path='feed')
+    def feed(self, request):
+        # Authors are those the user is following
+        following_ids = request.user.following.values_list('id', flat=True)
+        qs = self.get_queryset().filter(author_id__in=following_ids).order_by('-created_at')
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            ser = self.get_serializer(page, many=True)
+            return self.get_paginated_response(ser.data)
+        ser = self.get_serializer(qs, many=True)
+        return Response(ser.data)
+
+@action(detail=False, methods=['get'], url_path='my')
+    def my_posts(self, request):
+        qs = self.get_queryset().filter(author=request.user)
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            ser = self.get_serializer(page, many=True)
+            return self.get_paginated_response(ser.data)
+        ser = self.get_serializer(qs, many=True)
+        return Response(ser.data)
+
+ @action(detail=True, methods=['post'], url_path='like')
+    def like(self, request, pk=None):
+        post = self.get_object()
+        like, created = Like.objects.get_or_create(post=post, user=request.user)
+        if created:
+            if post.author != request.user:
+                create_notification(recipient=post.author, actor=request.user, verb='liked', target=post)
+            return Response({'detail': 'Post liked.'}, status=status.HTTP_200_OK)
+        return Response({'detail': 'Already liked.'}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='unlike')
+    def unlike(self, request, pk=None):
+        post = self.get_object()
+        deleted, _ = Like.objects.filter(post=post, user=request.user).delete()
+        if deleted:
+            return Response({'detail': 'Post unliked.'}, status=status.HTTP_200_OK)
+        return Response({'detail': 'Not previously liked.'}, status=status.HTTP_200_OK)
+
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.select_related('post', 'author')
@@ -43,6 +90,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+    
+    def perform_create(self, serializer):
+        comment = serializer.save(author=self.request.user)
+        post = comment.post
+        if post.author != self.request.user:
+            create_notification(recipient=post.author, actor=self.request.user, verb='commented', target=comment)
+
 
     def get_queryset(self):
         qs = super().get_queryset()

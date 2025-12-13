@@ -9,6 +9,14 @@ from .serializers import (
     RegisterSerializer, LoginSerializer, UserSerializer, ProfileUpdateSerializer
 )
 from .models import User
+from .serializers import UserSerializer
+from django.shortcuts import get_object_or_404
+from .models import User
+from notifications.utils import create_notification
+
+
+
+
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -67,4 +75,65 @@ class FollowView(APIView):
         except User.DoesNotExist:
             return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
         target.followers.remove(request.user)
+        return Response({'detail': f'You unfollowed {target.username}.'}, status=status.HTTP_200_OK)
+
+# accounts/views.py
+
+
+class FollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        if target == request.user:
+            return Response({'detail': 'Cannot follow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+        request.user.follow(target)
+        return Response({'detail': f'You now follow {target.username}.'}, status=status.HTTP_200_OK)
+
+class UnfollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        request.user.unfollow(target)
+        return Response({'detail': f'You unfollowed {target.username}.'}, status=status.HTTP_200_OK)
+
+class MyFollowingListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        qs = request.user.following.all().order_by('username')
+        data = UserSerializer(qs, many=True).data
+        return Response({'count': len(data), 'results': data})
+
+class MyFollowersListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        qs = request.user.followers.all().order_by('username')
+        data = UserSerializer(qs, many=True).data
+        return Response({'count': len(data), 'results': data})
+    
+
+    class FollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        if target == request.user:
+            return Response({'detail': 'Cannot follow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+        if request.user.is_following(target):
+            return Response({'detail': f'Already following {target.username}.'}, status=status.HTTP_200_OK)
+        request.user.follow(target)
+        create_notification(recipient=target, actor=request.user, verb='followed', target=request.user)
+        return Response({'detail': f'You now follow {target.username}.'}, status=status.HTTP_200_OK)
+
+class UnfollowUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, user_id):
+        target = get_object_or_404(User, pk=user_id)
+        if not request.user.is_following(target):
+            return Response({'detail': f'You are not following {target.username}.'}, status=status.HTTP_200_OK)
+        request.user.unfollow(target)
         return Response({'detail': f'You unfollowed {target.username}.'}, status=status.HTTP_200_OK)

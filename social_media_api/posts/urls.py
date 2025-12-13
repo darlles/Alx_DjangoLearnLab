@@ -9,4 +9,8 @@ router.register(r'comments', CommentViewSet, basename='comment')
 
 urlpatterns = [
     path('', include(router.urls)),
+     # Like/unlike available at:
+    # POST /api/posts/{id}/like/
+    # POST /api/posts/{id}/unlike/
+
 ]
