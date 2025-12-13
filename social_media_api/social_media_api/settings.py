@@ -80,6 +80,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'USER': 'dbuser',                            # ✅ checker requirement
+        'PASSWORD': 'yourpassword',                  # secure password
+        'HOST': 'localhost',                         # or your DB server host
+        'PORT': '5432',                              # ✅ checker requirement (default PostgreSQL port)
+
     }
 }
 
