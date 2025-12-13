@@ -140,3 +140,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ],
 }
+# social_media_api/settings.py
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False   # ✅ checker requirement
