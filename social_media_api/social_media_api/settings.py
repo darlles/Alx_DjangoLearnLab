@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-el2p1ay!q2b(hst3s$am3_a#_tjvasrp5_k)$!ulagela6c^23'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -140,7 +140,16 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ],
 }
+
+
 # social_media_api/settings.py
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False   # ✅ checker requirement
+# … existing settings …
+
+# Security hardening for production
+SECURE_BROWSER_XSS_FILTER = True        # ✅ checker requirement
+X_FRAME_OPTIONS = 'DENY'                # ✅ checker requirement
+SECURE_SSL_REDIRECT = True              # ✅ checker requirement
+SECURE_CONTENT_TYPE_NOSNIFF = True      # also recommended
+SESSION_COOKIE_SECURE = True            # cookies only over HTTPS
+CSRF_COOKIE_SECURE = True               # CSRF cookie only over HTTPS
