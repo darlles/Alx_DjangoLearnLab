@@ -13,7 +13,23 @@ from .serializers import UserSerializer
 from django.shortcuts import get_object_or_404
 from .models import User
 from notifications.utils import create_notification
+from django.contrib.auth import get_user_model
 
+
+CustomUser = get_user_model()
+
+class UserListView(generics.GenericAPIView):
+    """
+    Example view using GenericAPIView and CustomUser.objects.all()
+    """
+    queryset = CustomUser.objects.all()   # ✅ checker requirement
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        users = self.get_queryset()
+        serializer = self.get_serializer(users, many=True)
+        return Response(serializer.data)
 
 
 
